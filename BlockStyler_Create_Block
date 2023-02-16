@@ -1,0 +1,264 @@
+
+using System;
+using NXOpen;
+using NXOpen.BlockStyler;
+using NXOpen.Features;
+
+public class BlockBuilder
+{
+    //class members
+    private static Session theSession = null;
+    private static UI theUI = null;
+    private string theDlxFileName;
+    private NXOpen.BlockStyler.BlockDialog theDialog;
+    private NXOpen.BlockStyler.Group group0;// Block type: Group
+    private static NXOpen.BlockStyler.StringBlock length_str;// Block type: String
+    private static NXOpen.BlockStyler.StringBlock width_str;// Block type: String
+    private static NXOpen.BlockStyler.StringBlock height_str;// Block type: String
+    private static NXOpen.BlockStyler.SpecifyPoint selected_point;// Block type: Specify Point
+    private static NXOpen.BlockStyler.Button createBlock_btn;// Block type: Button
+
+
+    public BlockBuilder()
+    {
+        try
+        {
+            theSession = Session.GetSession();
+            theUI = UI.GetUI();
+            theDlxFileName = "BlockBuilder.dlx";
+            theDialog = theUI.CreateDialog(theDlxFileName);
+            theDialog.AddApplyHandler(new NXOpen.BlockStyler.BlockDialog.Apply(apply_cb));
+            theDialog.AddOkHandler(new NXOpen.BlockStyler.BlockDialog.Ok(ok_cb));
+            theDialog.AddUpdateHandler(new NXOpen.BlockStyler.BlockDialog.Update(update_cb));
+            theDialog.AddInitializeHandler(new NXOpen.BlockStyler.BlockDialog.Initialize(initialize_cb));
+            theDialog.AddDialogShownHandler(new NXOpen.BlockStyler.BlockDialog.DialogShown(dialogShown_cb));
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            throw ex;
+        }
+    }
+
+
+    static void blockBuilder1()
+    {
+       
+
+        if (selected_point != null && length_str.Value != String.Empty && width_str.Value != String.Empty && height_str.Value != String.Empty  )
+        {
+            Part workPart = theSession.Parts.Work;
+            Feature feature = null;
+            BlockFeatureBuilder blockBuilder = null;
+            blockBuilder = workPart.Features.CreateBlockFeatureBuilder(feature);
+
+            blockBuilder.BooleanOption.Type = NXOpen.GeometricUtilities.BooleanOperation.BooleanType.Create;
+            blockBuilder.Type = BlockFeatureBuilder.Types.OriginAndEdgeLengths;
+
+            blockBuilder.Origin = new Point3d(selected_point.Point.X, selected_point.Point.Y, selected_point.Point.Z);
+
+            blockBuilder.SetHeight(height_str.Value);
+            blockBuilder.SetLength(length_str.Value);
+            blockBuilder.SetWidth(width_str.Value);
+
+          
+
+            blockBuilder.CommitFeature();
+            blockBuilder.Destroy();
+        }
+
+
+
+    }
+
+
+
+    public static void Main()
+    {
+        BlockBuilder theBlockBuilder = null;
+        try
+        {
+            theBlockBuilder = new BlockBuilder();
+            // The following method shows the dialog immediately
+            theBlockBuilder.Show();
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        finally
+        {
+            if(theBlockBuilder != null)
+                theBlockBuilder.Dispose();
+                theBlockBuilder = null;
+        }
+    }
+
+     public static int GetUnloadOption(string arg)
+    {
+       ;
+         return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+     
+    }
+    
+  
+    public static void UnloadLibrary(string arg)
+    {
+        try
+        {
+            //---- Enter your code here -----
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+    }
+    
+
+    public NXOpen.UIStyler.DialogResponse Show()
+    {
+        try
+        {
+            theDialog.Show();
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        return 0;
+    }
+    
+
+    public void Dispose()
+    {
+        if(theDialog != null)
+        {
+            theDialog.Dispose();
+            theDialog = null;
+        }
+    }
+
+    public void initialize_cb()
+    {
+        try
+        {
+            group0 = (NXOpen.BlockStyler.Group)theDialog.TopBlock.FindBlock("group0");
+            length_str = (NXOpen.BlockStyler.StringBlock)theDialog.TopBlock.FindBlock("length_str");
+            width_str = (NXOpen.BlockStyler.StringBlock)theDialog.TopBlock.FindBlock("width_str");
+            height_str = (NXOpen.BlockStyler.StringBlock)theDialog.TopBlock.FindBlock("height_str");
+            selected_point = (NXOpen.BlockStyler.SpecifyPoint)theDialog.TopBlock.FindBlock("selected_point");
+            createBlock_btn = (NXOpen.BlockStyler.Button)theDialog.TopBlock.FindBlock("createBlock_btn");
+        
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+    }
+
+    public void dialogShown_cb()
+    {
+        try
+        {
+            //---- Enter your callback code here -----
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+    }
+    
+    //------------------------------------------------------------------------------
+    //Callback Name: apply_cb
+    //------------------------------------------------------------------------------
+    public int apply_cb()
+    {
+        int errorCode = 0;
+        try
+        {
+            blockBuilder1();
+
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            errorCode = 1;
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        return errorCode;
+    }
+    
+    //------------------------------------------------------------------------------
+    //Callback Name: update_cb
+    //------------------------------------------------------------------------------
+    public int update_cb( NXOpen.BlockStyler.UIBlock block)
+    {
+        try
+        {
+            if(block == length_str)
+            {
+            //---------Enter your code here-----------
+            }
+            else if(block == width_str)
+            {
+            //---------Enter your code here-----------
+            }
+            else if(block == height_str)
+            {
+            //---------Enter your code here-----------
+            }
+            else if(block == selected_point)
+            {
+            //---------Enter your code here-----------
+            }
+            else if(block == createBlock_btn)
+            {
+            //---------Enter your code here-----------
+            }
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        return 0;
+    }
+
+    public int ok_cb()
+    {
+        int errorCode = 0;
+        try
+        {
+            errorCode = apply_cb();
+            //---- Enter your callback code here -----
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            errorCode = 1;
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        return errorCode;
+    }
+
+    public PropertyList GetBlockProperties(string blockID)
+    {
+        PropertyList plist =null;
+        try
+        {
+            plist = theDialog.GetBlockProperties(blockID);
+        }
+        catch (Exception ex)
+        {
+            //---- Enter your exception handling code here -----
+            theUI.NXMessageBox.Show("Block Styler", NXMessageBox.DialogType.Error, ex.ToString());
+        }
+        return plist;
+    }
+    
+}
