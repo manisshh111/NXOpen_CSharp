@@ -1,0 +1,104 @@
+using System;
+using NXOpen;
+using NXOpen.Assemblies;
+using System.IO;
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
+
+public class Program
+{
+    // class members
+    private static Session theSession;
+    public static Program theProgram;
+    public static bool isDisposeCalled;
+
+    //Traverse through assembly tree using recursive loop
+
+    public static void GetAssemblyComponents(Component comp)
+    {
+
+        depth = depth + 1;
+        string indentString = Indent(depth);
+        texts.Enqueue(indentString + comp.Name);
+
+        foreach (Component child in comp.GetChildren())
+        {
+            GetAssemblyComponents(child);
+        }
+
+        depth = depth - 1;
+
+    }
+
+
+    //Indentation for showing hierarchial structure
+    static int depth = 0;
+    public static string Indent(int level)
+    {
+        char space = ' ';
+        return new string(space, 3 * level);
+    }
+
+
+    static Queue<string> texts = new Queue<string>();
+
+
+    public static void textWriter(Queue<string> texts)
+    {
+        TextWriter text1 = new StreamWriter("D:\\AssemblyText.txt");
+
+        foreach (string item in texts)
+        {
+            text1.Write(item + "\n");
+        }
+        text1.Close();
+
+    }
+
+
+
+    public static void Main(string[] args)
+    {
+
+        try
+        {
+
+            theSession = Session.GetSession();
+            Part workPart = theSession.Parts.Work;
+            Component root = workPart.ComponentAssembly.RootComponent;
+            string workPartName = workPart.Name;
+            texts.Enqueue(workPartName);
+            GetAssemblyComponents(root);
+            textWriter(texts);
+
+            //Open the text file using windows commands
+            string filePath = "D:\\AssemblyText.txt";
+
+            // Start the process and run the notepad command
+            using (Process process = new Process())
+            {
+                process.StartInfo.FileName = "cmd.exe";
+                process.StartInfo.Arguments = $"/c start notepad {filePath}";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+
+                UI.GetUI().NXMessageBox.Show("Information", NXMessageBox.DialogType.Information, "Text File Created");
+            }
+
+        }
+        catch (NXOpen.NXException ex)
+        {
+        }
+
+    }
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+    }
+
+}
+
