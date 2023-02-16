@@ -1,0 +1,58 @@
+using System;
+using NXOpen;
+using NXOpenUI;
+using NXOpen.UF;
+
+
+public class Program
+{
+    public static Session theSession;
+    public static Program theProgram;
+    public static bool isDisposeCalled;
+
+    static void HideCurve()
+    {
+        theSession = Session.GetSession();
+        UI theUI = UI.GetUI();
+        var selManager = theUI.SelectionManager;
+        TaggedObject obj;
+        Point3d cursor = new Point3d();
+        string cue = "Please select a curve to be hidden";
+        string title = "Selection demo";
+        var scope = NXOpen.Selection.SelectionScope.AnyInAssembly;
+        var action = NXOpen.Selection.SelectionAction.ClearAndEnableSpecific;
+        var highlight = false;
+
+        NXOpen.Selection.SelectionType[] types = { Selection.SelectionType.Curves };
+
+        NXOpen.Selection.Response response = selManager.SelectTaggedObject(cue, title, scope, highlight, types, out obj, out cursor);
+
+        if (response != Selection.Response.Back && response != Selection.Response.Cancel)
+        {
+            DisplayableObject disObj = (DisplayableObject)obj;
+            disObj.Blank();
+        }
+
+    }
+   
+
+    public static void Main(string[] args)
+    {
+        try
+        {
+            HideCurve();
+        }
+
+        catch (NXOpen.NXException ex)
+        {
+        }
+    }
+
+    public static int GetUnloadOption(string arg)
+    {
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
