@@ -1,0 +1,64 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+using System.Collections.Generic;
+using System.Collections;
+
+public class Program
+{
+
+    private static Session theSession = Session.GetSession();
+    static UFSession ufSession = UFSession.GetUFSession();
+  
+    static void CreateChamfer()
+    {
+        int subtype = 1;
+        string offset1 = "5";
+        string offset2 = "0";
+        string angle = "5";
+        Tag featureObjID;
+
+        //Get all body and their edges
+        Part workPart = theSession.Parts.Work;
+        BodyCollection bodyCollection = theSession.Parts.Work.Bodies;
+        List<Tag> edgeTags = new List<Tag>(); 
+        foreach(Body body in bodyCollection)
+        {
+            Edge[] edges = body.GetEdges();
+
+            foreach(Edge edge in edges)
+            {
+                edgeTags.Add(edge.Tag);
+            }
+            ufSession.Modl.CreateChamfer(subtype, offset1, offset2, angle, edgeTags.ToArray(), out featureObjID);
+            edgeTags.Clear();
+        }
+
+
+    }
+
+    public static void Main(string[] args)
+    {
+        
+        try
+        {
+            CreateChamfer();
+           
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+        
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
