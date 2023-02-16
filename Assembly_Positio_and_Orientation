@@ -1,0 +1,63 @@
+using System;
+using NXOpen;
+using NXOpen.Assemblies;
+
+public class Program
+{
+    static Session theSession= Session.GetSession();
+    static Part workPart = theSession.Parts.Work;
+    static Component root = workPart.ComponentAssembly.RootComponent;
+    public static Program theProgram;
+
+   static string ms1 = "";
+
+    public static void messageWriter(string msg)
+    {
+        ms1+= msg;
+
+    }
+    public static void AssemblyInfo(Component comp)
+    {
+        Point3d p1 = new Point3d();
+        Matrix3x3 Mx;
+        comp.GetPosition(out p1, out Mx);
+
+        Vector3d AxisZ = new Vector3d(Mx.Zx, Mx.Zy, Mx.Zz);
+        string message = "Component Name : " + comp.Name + "\n" + "Position : " + p1.ToString() + "\n" + "AxisZ :" + AxisZ.ToString() + "\n\n";
+        messageWriter(message);
+       
+
+        foreach(Component child in comp.GetChildren())
+        {
+            AssemblyInfo(child);
+        }
+
+    }
+
+
+    public static int Main(string[] args)
+    {
+        int retValue = 0;
+        try
+        {
+            AssemblyInfo(root);
+            UI.GetUI().NXMessageBox.Show("Information", NXMessageBox.DialogType.Information, ms1);
+            
+
+        }
+        catch (NXOpen.NXException ex)
+        {
+          
+
+        }
+        return retValue;
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+         return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+    }
+
+}
+
