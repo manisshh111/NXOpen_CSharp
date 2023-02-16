@@ -1,0 +1,89 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+using NXOpen.Features;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Program
+{
+
+    private static Session theSession = Session.GetSession();
+    static UFSession ufSession = UFSession.GetUFSession();
+    public static Program theProgram;
+    static Part workPart = theSession.Parts.Work;
+
+
+    static void sweptFeature()
+    {
+        SketchFeature[] sketchFaeatures = theSession.Parts.Work.Features.GetFeatures().OfType<SketchFeature>().ToArray();
+        List<NXObject> circleObjects = new List<NXObject>();
+        List<NXObject> lineObjects = new List<NXObject>();
+
+        foreach(SketchFeature sketchFeature in sketchFaeatures)
+        {
+
+            NXObject[] nxObjects = sketchFeature.Sketch.GetAllGeometry();
+
+            foreach(NXObject nxObject in nxObjects)
+            {
+                if (nxObject.GetType() == typeof(Line))
+                {
+                    lineObjects.Add(nxObject);
+                }
+
+                if (nxObject.GetType() == typeof(Arc))
+                {
+                    circleObjects.Add(nxObject);
+                }
+            }
+
+
+        }
+
+        Swept swept = null;
+       
+        SweptBuilder sweptBuilder = theSession.Parts.Work.Features.CreateSweptBuilder(swept);
+
+        foreach (NXObject nxobj in circleObjects)
+        {
+            Section section = theSession.Parts.Work.Sections.CreateSection(nxobj);
+            sweptBuilder.SectionList.Append(section);
+        }
+
+        foreach(NXObject nxObj in lineObjects)
+        {
+            Section section = theSession.Parts.Work.Sections.CreateSection(nxObj);
+            sweptBuilder.GuideList.Append(section);
+
+        }
+
+        sweptBuilder.ScalingMethod.ScalingOption = NXOpen.GeometricUtilities.ScalingMethodBuilder.ScalingOptions.Constant;
+        sweptBuilder.CommitFeature();
+        sweptBuilder.Destroy();
+
+
+
+
+    }
+    public static void Main(string[] args)
+    {
+        try
+        {
+            sweptFeature();
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+    }
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
