@@ -8,10 +8,7 @@ using System.Diagnostics;
 
 public class Program
 {
-    // class members
-    private static Session theSession;
-    public static Program theProgram;
-    public static bool isDisposeCalled;
+     static Session theSession= Session.GetSession();
 
     //Traverse through assembly tree using recursive loop
 
@@ -64,7 +61,6 @@ public class Program
         try
         {
 
-            theSession = Session.GetSession();
             Part workPart = theSession.Parts.Work;
             Component root = workPart.ComponentAssembly.RootComponent;
             string workPartName = workPart.Name;
