@@ -1,0 +1,44 @@
+using System;
+using NXOpen;
+using NXOpen.Features;
+
+public class Program
+{
+    static Session theSession= Session.GetSession();
+    static Part workPart = theSession.Parts.Work;
+    static Part displayPart = theSession.Parts.Display;
+
+
+    static void CreateSphere()
+    {
+        NXOpen.Features.SphereBuilder builder;
+        builder = workPart.Features.CreateSphereBuilder(null);
+        builder.Type = SphereBuilder.Types.CenterPointAndDiameter;
+        Point3d center = new Point3d(3, 5, 6);
+        Point centrePoint = workPart.Points.CreatePoint(center);
+        builder.CenterPoint = centrePoint;
+        string diameter = "20";
+        builder.Diameter.RightHandSide = diameter;
+        builder.BooleanOption.Type = NXOpen.GeometricUtilities.BooleanOperation.BooleanType.Create;
+        object sphere = builder.CommitFeature();
+
+        builder.Destroy();
+    }
+
+    public static void Main(string[] args)
+    {
+        try
+        {
+        }
+        catch (NXOpen.NXException ex)
+        {
+        } 
+    }
+
+    public static int GetUnloadOption(string arg)
+    {
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+    }
+
+}
+
