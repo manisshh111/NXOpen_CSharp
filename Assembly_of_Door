@@ -1,0 +1,78 @@
+using System;
+using NXOpen;
+using NXOpen.Assemblies;
+
+public class Program
+{
+
+    private static Session theSession;
+    public static Program theProgram;
+    public static bool isDisposeCalled;
+
+
+    static void Assembly()
+    {
+        theSession = Session.GetSession();
+        Part.Units mm = Part.Units.Millimeters;
+        Part doorAssembly = theSession.Parts.NewDisplay(@"D:\NX 12 setup\UGII", mm);
+
+        theSession.Parts.SetWork(doorAssembly);
+        ComponentAssembly compAssy = doorAssembly.ComponentAssembly;
+        PartLoadStatus status = null;
+        Point3d origin = new Point3d(0, 0, 0);
+        int layers = -1;
+
+        //identity matrix for orientation
+        Matrix3x3 matrix;
+        matrix.Xx = 1; matrix.Xy = 0; matrix.Xz = 0;
+        matrix.Yx = 0; matrix.Yy = 1; matrix.Yz = 0;
+        matrix.Zx = 0; matrix.Zy = 0; matrix.Zz = 1;
+
+
+        string refSetNAme = "MODEL";
+        string partFilePAth = @"D:\NX 12 setup\UGII\Door.prt";
+        string compName = "doorComp";
+        compAssy.AddComponent(partFilePAth, refSetNAme, compName, origin, matrix, layers, out status);
+
+
+        Matrix3x3 matrix1;
+        matrix1.Xx = 0; matrix1.Xy = 1; matrix1.Xz = 0;
+        matrix1.Yx = -1; matrix1.Yy = 0; matrix1.Yz = 0;
+        matrix1.Zx = 0; matrix1.Zy = 0; matrix1.Zz = 1;
+        Point3d p1 = new Point3d(25, 0, 5);
+        partFilePAth = @"D:\NX 12 setup\UGII\Grip.prt";
+        compName = "gripComp";
+        compAssy.AddComponent(partFilePAth, refSetNAme, compName, p1, matrix1, layers, out status);
+
+        Matrix3x3 matrix2;
+        matrix2.Xx = -1; matrix2.Xy = 0; matrix2.Xz = 0;
+        matrix2.Yx = 0; matrix2.Yy = -1; matrix2.Yz = 0;
+        matrix2.Zx = 0; matrix2.Zy = 0; matrix2.Zz = 1;
+        Point3d p2 = new Point3d(0, 25, 5);
+        partFilePAth = @"D:\NX 12 setup\UGII\Grip.prt";
+        compName = "gripComp";
+        compAssy.AddComponent(partFilePAth, refSetNAme, compName, p2, matrix2, layers, out status);
+    }
+    
+
+    public static int Main(string[] args)
+    {
+        int retValue = 0;
+        try
+        {
+            theProgram = new Program();
+        }
+        catch (NXOpen.NXException ex)
+        {
+        }
+        return retValue;
+    }
+   
+
+    public static int GetUnloadOption(string arg)
+    {
+         return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+    }
+
+}
+
