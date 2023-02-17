@@ -1,0 +1,54 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+using NXOpen.Features;
+
+public class Program
+{
+
+    static Session theSession = Session.GetSession();
+    static Part parts = theSession.Parts.Work;
+
+    static void buildBlock()
+    {
+        Feature feature = null;
+        BlockFeatureBuilder blockBuilder = null;
+        blockBuilder = parts.Features.CreateBlockFeatureBuilder(feature);
+
+        blockBuilder.BooleanOption.Type = NXOpen.GeometricUtilities.BooleanOperation.BooleanType.Create;
+        blockBuilder.Type = BlockFeatureBuilder.Types.OriginAndEdgeLengths;
+
+        Point3d p1 = new Point3d(0, 0, 0);
+        Point originPoint = parts.Points.CreatePoint(p1);
+
+        blockBuilder.OriginPoint = originPoint;
+        blockBuilder.SetOriginAndLengths(p1, "100", "500", "200");
+
+        blockBuilder.CommitFeature();
+        blockBuilder.Destroy();
+    }
+
+    public static void Main(string[] args)
+    {
+       
+        try
+        {
+            buildBlock();
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+    }
+
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
