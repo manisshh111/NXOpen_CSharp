@@ -7,7 +7,7 @@ using System.Collections;
 public class Program
 {
 
-    private static Session theSession = Session.GetSession();
+    static Session theSession = Session.GetSession();
     static UFSession ufSession = UFSession.GetUFSession();
   
     static void CreateChamfer()
