@@ -1,0 +1,107 @@
+using System;
+using NXOpen;
+using NXOpen.Drawings;
+public class Program
+{
+
+    static Session theSession = Session.GetSession();
+    static Part workPart = theSession.Parts.Work;
+    static  Part displayPart = theSession.Parts.Display;
+
+    static void StandardDrawingBuilder()
+    {
+        //Create DraftingDrawingSheetBuilder
+        NXOpen.Drawings.DraftingDrawingSheetBuilder drawBuilder = workPart.DraftingDrawingSheets.CreateDraftingDrawingSheetBuilder(null);
+
+        //----
+        // Set different values to builder--> AutostartViewCreation, StandardMetricScale, StandardEnglishScale,
+        // MetricSheetTemplateLocation, EnglishSheetTemplateLocation, Height, Length, ScaleNumerator, ScaleDenominator,
+        //Units, ProjectionAngle,Number, Secondary Number, Revision 
+
+        drawBuilder.AutoStartViewCreation = true;
+        drawBuilder.StandardMetricScale = DrawingSheetBuilder.SheetStandardMetricScale.S11;
+        drawBuilder.StandardEnglishScale = DrawingSheetBuilder.SheetStandardEnglishScale.S11;
+        drawBuilder.MetricSheetTemplateLocation = "D:\\NX 12 setup\\DRAFTING\\templates\\Drawing-A0-Size2D-template.prt";
+        drawBuilder.EnglishSheetTemplateLocation = "D:\\NX 12 setup\\DRAFTING\\templates\\Drawing-A-Size2D-template.prt";
+        drawBuilder.Height = 841;
+        drawBuilder.Length = 1189;
+        drawBuilder.ScaleDenominator = 1;
+        drawBuilder.ScaleNumerator = 4;
+        drawBuilder.Units = DrawingSheetBuilder.SheetUnits.Metric;
+        drawBuilder.ProjectionAngle = DrawingSheetBuilder.SheetProjectionAngle.Third;
+        drawBuilder.Number = "1";
+        drawBuilder.SecondaryNumber = "";
+        drawBuilder.Revision = "A";
+
+        NXObject sheetObj = drawBuilder.Commit();
+
+        UI.GetUI().NXMessageBox.Show("Message", NXMessageBox.DialogType.Information, "Sheet Created, Press Ok to add Views");
+
+        drawBuilder.Destroy();
+
+        //Create ViewCreationWizardBuilder
+
+        ViewCreationWizardBuilder viewBuilder = workPart.DraftingViews.CreateViewCreationWizardBuilder();
+
+        //---
+        // Set different values to builder: 
+        //MultipleViewPlacement (ViewPlacementCenter, FirstCorner, SecondCorner)
+        // AssociativeAlignment, BaseView, SpecialBaseView, TopView, RightView, LeftView, BottomView, BackView
+        // TrimetricView, IsometricView, ViewRepresentation,  Resolution, Part, Arrangement, ViewStyleBse.Part, 
+        //  MarginToBprder, MarginBetweenBodies
+
+        viewBuilder.MultipleViewPlacement.ViewPlacementCenter.Associative = true;
+        viewBuilder.MultipleViewPlacement.ViewPlacementFirstCorner.Associative = true;
+        viewBuilder.MultipleViewPlacement.ViewPlacementSecondCorner.Associative = true;
+        viewBuilder.AssociativeAlignment = true;
+        viewBuilder.BaseView = "Top";
+        viewBuilder.SpecialBaseView = false;
+        viewBuilder.TopView = true;
+        viewBuilder.RightView = true;
+        viewBuilder.LeftView = true;
+        viewBuilder.BottomView = true;
+        viewBuilder.BackView = true;
+        viewBuilder.TrimetricView = true;
+        viewBuilder.IsometricView = true;
+        viewBuilder.ViewRepresentation = ViewCreationWizardBuilder.ViewRepresentations.SmartLightweight;
+        viewBuilder.Resolution = ViewCreationWizardBuilder.ResolutionOption.Medium;
+
+        bool loadStatus = workPart.IsFullyLoaded;
+        viewBuilder.Part = workPart;
+
+        viewBuilder.ViewStyle.ViewStyleBase.Arrangement.SelectedArrangement = null;
+        viewBuilder.ViewStyle.ViewStyleBase.Arrangement.InheritArrangementFromParent = false;
+        viewBuilder.ViewStyle.ViewStyleBase.Part = workPart;
+        viewBuilder.MarginToBorder = 20;
+        viewBuilder.MarginBetweenViews = 5;
+        NXObject ViewObject = viewBuilder.Commit();
+
+        NXObject[] objects = viewBuilder.GetCommittedObjects();
+        viewBuilder.Destroy();
+    }
+
+
+    
+    public static void Main(string[] args)
+    {
+        
+        try
+        {
+            StandardDrawingBuilder();
+           
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+        
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    { 
+         return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+    }
+
+}
+
