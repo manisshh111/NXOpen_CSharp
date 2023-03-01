@@ -1,0 +1,87 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+
+public class Program
+{
+
+    public static Session theSession = Session.GetSession();
+    public static UFSession ufSession = UFSession.GetUFSession();
+
+
+
+
+    public static void Main(string[] args)
+    {
+
+        try
+        {
+
+            //Create Sketch
+            string name = "Sketch1";
+            Tag tag1;
+            ufSession.Sket.InitializeSketch(ref name, out tag1);
+            //pass X-Axis, YAxis & origin to matrix array
+            double[] matrix = { 1, 0, 0, 0, 1, 0, 0, 0, 0 };
+
+
+            Tag[] nullTag1 = new Tag[0];
+            int[] null2 = new int[0];
+
+            Tag sketchTag;
+            ufSession.Sket.CreateSketch(name, 2, matrix, nullTag1, null2, 1, out sketchTag);
+
+            //Create an Arc
+
+            
+            UFCurve.Arc arcPt = new UFCurve.Arc();
+            double[] centre = { 5, 5, 0 };
+            arcPt.arc_center = centre;
+            double[] matrixValues = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+            Tag matrixTag;
+            ufSession.Csys.CreateMatrix(matrixValues, out matrixTag);
+            arcPt.matrix_tag = matrixTag;
+            arcPt.radius = 3;
+            arcPt.start_angle = 0;
+            double pi = Math.PI;
+            arcPt.end_angle = 2*pi;
+            Tag geometryTag;
+            ufSession.Curve.CreateArc(ref arcPt, out geometryTag);
+            Tag[] objectsTag = { geometryTag };
+
+            ufSession.Sket.AddObjects(sketchTag, 1, objectsTag);  //Add the arc to sketch
+
+           //Create dimension
+            UFSket.DimObject dm = new UFSket.DimObject();
+            dm.object_tag = geometryTag;
+            dm.object_assoc_type = UFSket.AssocType.ArcCenter;
+            dm.object_assoc_mod_value = 10;
+            double[] origin = { 5, 5, 0 };
+            Tag dimtag;
+            UFSket.DimObject dm2 = new UFSket.DimObject();
+            ufSession.Sket.CreateDimension(sketchTag, UFSket.ConType.DiameterDim, ref dm, ref dm2, origin, out dimtag);
+
+            theSession.ActiveSketch.Activate(Sketch.ViewReorient.True);
+            
+                ufSession.Sket.TerminateSketch();
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
+
+            
+            
