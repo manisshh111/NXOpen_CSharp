@@ -1,0 +1,100 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+
+public class Program
+{
+
+    public static Session theSession = Session.GetSession();
+    public static UFSession ufSession = UFSession.GetUFSession();
+    public static Part workPArt = theSession.Parts.Work;
+
+    static Tag[] objects = new Tag[3];
+
+    static void createLineAndFillet()
+    {
+
+        UFCurve.Line dataMembers1 = new UFCurve.Line();
+        double[] startPoint1 = { 0, 0, 0 };
+        double[] endPoint1 = { 10, 0, 0 };
+
+        dataMembers1.start_point = startPoint1;
+        dataMembers1.end_point = endPoint1;
+        Tag lineTag1;
+        ufSession.Curve.CreateLine( ref dataMembers1, out lineTag1);
+
+
+        UFCurve.Line dataMembers2 = new UFCurve.Line();
+        double[] startPoint2 = { 11, 2, 0 };
+        double[] endPoint2 = { 11, 12, 0 };
+
+        dataMembers2.start_point = startPoint2;
+        dataMembers2.end_point = endPoint2;
+        Tag lineTag2;
+        ufSession.Curve.CreateLine(ref dataMembers2, out lineTag2);
+
+        Tag[] lineTags = { lineTag1, lineTag2, 0 };
+        double[] center = { 10.5, 1, 0 };
+        int[] trimOpts = { 1, 1 };
+        int[] arcPoint = new int[0];
+        Tag filletObj;
+        ufSession.Curve.CreateFillet(UFConstants.UF_CURVE_2_CURVE, lineTags, center, 2, trimOpts, arcPoint, out filletObj);
+
+        objects[0] = lineTag1;
+        objects[1] = lineTag2;
+        objects[2] = filletObj;
+    }
+
+    static void addCurveToSketch()
+    {
+        ufSession.Sket.AddObjects(sketchTag, 3, objects);
+
+    }
+
+    static Tag sketchTag;
+    static void CreateSketch()
+    {
+        
+        string name = "Sketch1";
+        Tag tag1;
+        ufSession.Sket.InitializeSketch(ref name, out tag1);
+        //pass X-Axis, YAxis & origin to matrix array
+        double[] matrix = { 1, 0, 0, 0, 1, 0, 0, 0, 0 };
+
+
+        Tag[] nullTag1 = new Tag[0];
+        int[] null2 = new int[0];
+        
+
+        ufSession.Sket.CreateSketch(name, 2, matrix, nullTag1, null2, 1, out sketchTag);
+        theSession.ActiveSketch.Activate(Sketch.ViewReorient.True);
+
+    }
+
+    public static void Main(string[] args)
+    {
+
+        try
+        {
+            CreateSketch();
+            createLineAndFillet();
+            addCurveToSketch();
+
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
