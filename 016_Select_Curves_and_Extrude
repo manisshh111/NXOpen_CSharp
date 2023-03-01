@@ -1,0 +1,85 @@
+using System;
+using NXOpen;
+using NXOpen.UF;
+using System.Collections.Generic;
+
+
+//Select Curves, Upon clicking 'OK' Button, It extrudes.
+public class Program
+{
+
+    public static Session theSession = Session.GetSession();
+    public static UFSession ufSession = UFSession.GetUFSession();
+
+    static List<Tag> objTagsList= new List<Tag>();
+
+    static void SelectCurves()
+    {
+
+        UI theUI = UI.GetUI();
+        var selManager = theUI.SelectionManager;
+        TaggedObject obj;
+        Point3d cursor = new Point3d();
+        string cue = "Select Curves";
+        string title = "Extrude";
+        var scope = NXOpen.Selection.SelectionScope.AnyInAssembly;
+        var action = NXOpen.Selection.SelectionAction.ClearAndEnableSpecific;
+        var highlight = false;
+
+        NXOpen.Selection.SelectionType[] types = { Selection.SelectionType.Curves };
+
+        NXOpen.Selection.Response response = selManager.SelectTaggedObject(cue, title, scope, highlight, types, out obj, out cursor);
+
+        if (response != Selection.Response.Back && response != Selection.Response.Cancel && response != Selection.Response.Ok)
+        {
+            Tag objTAg = obj.Tag;
+            objTagsList.Add(objTAg);
+            SelectCurves();
+        }
+
+        else if(response != Selection.Response.Back && response != Selection.Response.Cancel)
+        {
+            Extrude();
+
+
+        }
+
+
+    }
+
+    static void Extrude()
+    {
+        Tag[] objects = objTagsList.ToArray();
+        string[] limits = { "0", "10" };
+        double[] direction = { 0, 0, 1 };
+        double[] point = { 0, 0, 0 };
+        Tag[] OutFeatures;
+        ufSession.Modl.CreateExtruded(objects, "0", limits, point, direction, FeatureSigns.Nullsign, out OutFeatures);
+    }
+
+
+
+    public static void Main(string[] args)
+    {
+
+        try
+        {
+            SelectCurves();
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
