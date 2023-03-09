@@ -1,0 +1,75 @@
+/*
+ * Cycle over solid objects in the current work part and prints information about their type, sub-type, creation version, 
+ * and last modification version  number. 
+ */
+using System;
+using NXOpen;
+using NXOpen.UF;
+
+public class Program
+{
+
+    public static Session theSession = Session.GetSession();
+    public static UFSession ufSession = UFSession.GetUFSession();
+    static Part workPart = theSession.Parts.Work;
+    static Part displayPArt = theSession.Parts.Display;
+
+
+
+    public static void Main(string[] args)
+    {
+
+        try
+        {
+            string str = "";
+            string title = "Object ID    Type    Subtype    Creation Version    ModifiedVersion";
+            string line_buff = "\n---------    ----    -------    ----------------    ---------------\n";
+            int rtype, subtype, type = UFConstants.UF_solid_type;
+            int creationVersion, lastModVersion;
+            Tag workPartTag = workPart.Tag;
+            if (workPartTag != Tag.Null)
+            {
+
+                string partName;
+                ufSession.Part.AskPartName(workPartTag, out partName);
+                Tag nullTag = Tag.Null;
+                Tag obj = Tag.Null;
+                ufSession.Obj.CycleObjsInPart(workPartTag, type, ref obj);
+
+                while (obj != nullTag)
+                {
+                    //string objName;
+                    //ufSession.Obj.AskName(obj, out objName);
+                    ufSession.Obj.AskTypeAndSubtype(obj, out rtype, out subtype);
+
+                    ufSession.Obj.AskCreModVersions(obj, out creationVersion, out lastModVersion);
+                    str += obj.ToString() + "        " + rtype + "      " + subtype + "           " + creationVersion + "                   " + lastModVersion + line_buff;
+
+                    ufSession.Obj.CycleObjsInPart(workPartTag, type, ref obj);
+
+                }
+                
+                ListingWindow listingWindow = theSession.ListingWindow;
+                listingWindow.Open();
+                string str1 = partName + "\n" + "\n" + title + line_buff + str;
+                listingWindow.WriteLine(str1);
+
+            }
+        }
+        catch (NXOpen.NXException ex)
+        {
+
+        }
+
+    }
+
+
+    public static int GetUnloadOption(string arg)
+    {
+
+        return System.Convert.ToInt32(Session.LibraryUnloadOption.Immediately);
+
+    }
+
+}
+
